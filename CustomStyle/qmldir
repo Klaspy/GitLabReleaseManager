@@ -1,0 +1,4 @@
+module CustomStyle
+singleton GlobalStyle 1.0 GlobalStyle.qml
+Button 1.0 Button.qml
+Text 1.0 Text.qml

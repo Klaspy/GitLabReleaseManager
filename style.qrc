@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>CustomStyle/Button.qml</file>
+        <file>CustomStyle/qmldir</file>
+        <file>CustomStyle/Text.qml</file>
+        <file>CustomStyle/GlobalStyle.qml</file>
+    </qresource>
+</RCC>

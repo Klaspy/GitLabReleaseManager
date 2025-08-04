@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/App.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>qml/modal/PrivateKeysListDialog.qml</file>
+    </qresource>
+</RCC>
