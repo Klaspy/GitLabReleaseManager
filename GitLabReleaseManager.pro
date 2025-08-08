@@ -13,15 +13,17 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 SOURCES += \
     main.cpp \
     src/databaseworker.cpp \
-    src/gitworker.cpp \
     src/privatekeymodel.cpp \
+    src/projects/project.cpp \
+    src/projects/projectslistmodel.cpp \
     src/requester.cpp
 
 HEADERS += \
     src/databaseworker.h \
-    src/gitworker.h \
     src/global.h \
     src/privatekeymodel.h \
+    src/projects/project.h \
+    src/projects/projectslistmodel.h \
     src/requester.h
 
 RESOURCES += \
@@ -33,4 +35,7 @@ QML_IMPORT_NAME = qmlcomponents
 QML_IMPORT_MAJOR_VERSION = 1
 QML_IMPORT_PATH += $$PWD/
 
-INCLUDEPATH += src
+INCLUDEPATH += src src/projects
+
+TRANSLATIONS += \
+    GitLabReleaseManager_ru_RU.ts

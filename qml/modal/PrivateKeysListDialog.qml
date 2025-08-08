@@ -261,7 +261,7 @@ Dialog {
         height: 50
 
             Button {
-                text: qsTr("+")
+                text: "+"
                 bgColor: "white"
                 radius: 5
                 font.pixelSize: 20

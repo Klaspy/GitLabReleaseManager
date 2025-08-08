@@ -66,24 +66,24 @@ Button {
 
         State {
             name: "clicked"
-            when: control.pressed || control.checked
+            when: control.enabled && (control.pressed || control.checked)
             PropertyChanges {target: blackout; opacity: 0.2}
         },
 
         State {
             name: "hovered"
-            when: control.hoverEnabled && control.hovered
+            when: control.enabled && control.hoverEnabled && control.hovered
             PropertyChanges {target: blackout; opacity: 0.05}
         },
 
         State {
             name: "highlited"
-            when: control.highlighted
+            when: control.enabled && control.highlighted
         },
 
         State {
             name: "flat"
-            when: control.flat
+            when: control.enabled && control.flat
             PropertyChanges {target: background; opacity: 0}
         },
 

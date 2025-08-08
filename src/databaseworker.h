@@ -1,6 +1,7 @@
 #ifndef DATABASEWORKER_H
 #define DATABASEWORKER_H
 
+#include <QCoreApplication>
 #include <QQmlEngine>
 #include <QObject>
 #include <QSqlDatabase>
@@ -16,12 +17,13 @@ class DatabaseWorker : public QObject
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
-public:
     explicit DatabaseWorker(QObject *parent = nullptr);
+public:
+    static DatabaseWorker *globalInstance();
 
-    QList<Project> getProjects() const;
-    bool addProject(const Project &project);
-    bool updateProject(const Project &project);
+    QList<ProjectData> getProjects() const;
+    bool addProject(const ProjectData &project);
+    bool updateProject(const ProjectData &project);
     bool deleteProject(const int &projectId);
     bool containsProject(const int &projectId);
 
@@ -30,6 +32,8 @@ public:
     bool deletePrivateKey(const int &keyId);
     bool containsPrivateKey(const QString &key);
     bool containsPrivateKey(const int &keyId);
+    QString getPrivateKey(const int &keyId);
+    int getPrivateKeyId(const QString &key);
 
 signals:
     void privateKeysChanged();

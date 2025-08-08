@@ -11,7 +11,7 @@ struct PrivateKey
     QString key;
 };
 
-struct Project
+struct ProjectData
 {
     int id;
     std::optional<int> privateKeyId {std::nullopt};

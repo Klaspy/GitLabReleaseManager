@@ -4,7 +4,7 @@ DatabaseWorker::DatabaseWorker(QObject *parent)
     : QObject{parent}
 {
     db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"));
-    db.setDatabaseName(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/database.sqlite");
+    db.setDatabaseName(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/database.sqlite");
     qDebug() << db.databaseName();
 
     db.open();
@@ -12,7 +12,13 @@ DatabaseWorker::DatabaseWorker(QObject *parent)
     init();
 }
 
-QList<Project> DatabaseWorker::getProjects() const
+DatabaseWorker *DatabaseWorker::globalInstance()
+{
+    static DatabaseWorker *worker = new DatabaseWorker(qApp);
+    return worker;
+}
+
+QList<ProjectData> DatabaseWorker::getProjects() const
 {
     QSqlQuery query("SELECT * FROM Projects ORDER BY Id");
 
@@ -21,11 +27,11 @@ QList<Project> DatabaseWorker::getProjects() const
         qWarning() << "Не удалось получить список проектов" << query.lastError();
     }
 
-    QList<Project> res;
+    QList<ProjectData> res;
     while (query.next())
     {
         QSqlRecord record = query.record();
-        Project project;
+        ProjectData project;
         project.id              = record.value("Id").toInt();
         if (record.value("PrivateKey").isNull())
         {
@@ -41,7 +47,7 @@ QList<Project> DatabaseWorker::getProjects() const
     return res;
 }
 
-bool DatabaseWorker::addProject(const Project &project)
+bool DatabaseWorker::addProject(const ProjectData &project)
 {
     if (containsProject(project.id)) return false;
 
@@ -63,7 +69,7 @@ bool DatabaseWorker::addProject(const Project &project)
     return true;
 }
 
-bool DatabaseWorker::updateProject(const Project &project)
+bool DatabaseWorker::updateProject(const ProjectData &project)
 {
     if (!containsProject(project.id)) return false;
 
@@ -204,6 +210,45 @@ bool DatabaseWorker::containsPrivateKey(const int &keyId)
     }
     query.next();
     return query.value(0).toBool();
+}
+
+QString DatabaseWorker::getPrivateKey(const int &keyId)
+{
+    QSqlQuery query("SELECT Key FROM PrivateKeys WHERE Id=?");
+    query.addBindValue(keyId);
+
+    if (!query.exec())
+    {
+        qWarning() << "Ошибка во время выполнения SELECT Key FROM PrivateKeys WHERE Id=?."
+                   << query.lastError();
+        return {};
+    }
+
+    if (query.next())
+    {
+        return query.value(0).toString();
+    }
+
+    return {};
+}
+
+int DatabaseWorker::getPrivateKeyId(const QString &key)
+{
+    QSqlQuery query("SELECT Id FROM PrivateKeys WHERE key=?");
+    query.addBindValue(key);
+
+    if (!query.exec())
+    {
+        qWarning() << "Ошибка во время выполнения SELECT Id FROM PrivateKeys WHERE Id=?."
+                   << query.lastError();
+        return false;
+    }
+
+    if (query.next())
+    {
+        return query.value(0).toBool();
+    }
+    return -1;
 }
 
 void DatabaseWorker::init()

@@ -14,7 +14,7 @@ class PrivateKeyModel : public QAbstractTableModel
     QML_ELEMENT
 
 public:
-    explicit PrivateKeyModel(DatabaseWorker *worker, QObject *parent = nullptr);
+    explicit PrivateKeyModel(QObject *parent = nullptr);
 
     // Header:
     QVariant headerData(int section,
@@ -27,16 +27,19 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-public slots:
-    bool canAddKey(const QString &key) const;
+    Q_INVOKABLE bool canAddKey(const QString &key) const;
+    Q_INVOKABLE int getPKeyId(const int index) const;
 
+public slots:
     void addKey(const QString &keyName, const QString &key);
     bool removeKey(int row);
 
     void copyKey(int row);
 
+private slots:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
-    DatabaseWorker *worker;
     QList<PrivateKey> keys;
 };
 

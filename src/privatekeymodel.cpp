@@ -1,14 +1,16 @@
 #include "privatekeymodel.h"
 
-PrivateKeyModel::PrivateKeyModel(DatabaseWorker *worker, QObject *parent)
+PrivateKeyModel::PrivateKeyModel(QObject *parent)
     : QAbstractTableModel(parent)
-    , worker {worker}
 {
-    keys = worker->getPrivateKeys();
+    keys = DatabaseWorker::globalInstance()->getPrivateKeys();
+
+    qApp->installEventFilter(this);
 }
 
 QVariant PrivateKeyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(role)
     if (orientation == Qt::Horizontal)
     {
         switch (section)
@@ -66,7 +68,16 @@ QVariant PrivateKeyModel::data(const QModelIndex &index, int role) const
 
 bool PrivateKeyModel::canAddKey(const QString &key) const
 {
-    return !worker->containsPrivateKey(key);
+    return !DatabaseWorker::globalInstance()->containsPrivateKey(key);
+}
+
+int PrivateKeyModel::getPKeyId(const int index) const
+{
+    if (index > -1 && index < keys.size())
+    {
+        return keys.at(index).id;
+    }
+    return -1;
 }
 
 void PrivateKeyModel::addKey(const QString &keyName, const QString &key)
@@ -74,7 +85,7 @@ void PrivateKeyModel::addKey(const QString &keyName, const QString &key)
     PrivateKey pKey;
     pKey.key = key;
     pKey.name = keyName;
-    if (worker->addPrivateKey(pKey))
+    if (DatabaseWorker::globalInstance()->addPrivateKey(pKey))
     {
         beginInsertRows({}, keys.size(), keys.size());
         keys.append(pKey);
@@ -89,7 +100,7 @@ bool PrivateKeyModel::removeKey(int row)
 
     beginRemoveRows({}, row, row);
 
-    qDebug() << worker->deletePrivateKey(keys.at(row).id);
+    DatabaseWorker::globalInstance()->deletePrivateKey(keys.at(row).id);
     keys.removeAt(row);
 
     endRemoveRows();
@@ -102,4 +113,13 @@ void PrivateKeyModel::copyKey(int row)
 
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(keys.at(row).key);
+}
+
+bool PrivateKeyModel::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == qApp && event->type() == QEvent::LanguageChange)
+    {
+        emit headerDataChanged(Qt::Horizontal, 0, 1);
+    }
+    return false;
 }
