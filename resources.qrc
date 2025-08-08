@@ -6,6 +6,7 @@
         <file>qml/modal/PreferencesDialog.qml</file>
         <file>qml/modal/AddProjectDialog.qml</file>
         <file>qml/components/HeaderButton.qml</file>
+        <file>qml/stackelements/ProjectStackElement.qml</file>
     </qresource>
     <qresource prefix="/translations">
         <file>GitLabReleaseManager_ru_RU.qm</file>

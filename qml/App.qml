@@ -8,6 +8,7 @@ import qmlcomponents
 
 import "./modal"
 import "./components"
+import "./stackelements"
 
 ApplicationWindow {
     id: root_window
@@ -232,35 +233,8 @@ ApplicationWindow {
                 height: content_rect.height - y - 10
                 currentIndex: stack_tb.currentIndex
 
-                Rectangle {
-                    color: "red"
-                }
-                Rectangle {
-                    implicitWidth: 200
-                    SplitView.maximumWidth: 400
-                    color: "lightblue"
-                    Label {
-                        text: "View 1"
-                        anchors.centerIn: parent
-                    }
-                }
-                Rectangle {
-                    id: centerItem
-                    SplitView.minimumWidth: 50
-                    SplitView.fillWidth: true
-                    color: "lightgray"
-                    Label {
-                        text: "View 2"
-                        anchors.centerIn: parent
-                    }
-                }
-                Rectangle {
-                    implicitWidth: 200
-                    color: "lightgreen"
-                    Label {
-                        text: "View 3"
-                        anchors.centerIn: parent
-                    }
+                ProjectStackElement {
+                    project: ProjectsListModel.project(projectsList_lv.currentIndex)
                 }
             }
         }

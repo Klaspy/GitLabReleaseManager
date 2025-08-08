@@ -1,32 +1,39 @@
 #include "project.h"
 
-Project::Project(const ProjectData &pData, QObject *parent)
+Project::Project(const ProjectData &pData, bool fromDb, QObject *parent)
     : QObject {parent}
     , data {pData}
 {
-    if (data.privateKeyId)
+    Requester *requester = Requester::globalInstance();
+    connect(requester, &Requester::getProjectDone, this, &Project::onGetProjectDone);
+    connect(requester, &Requester::getProjectError, this, &Project::onGetProjectError);
+
+    updateInfoTimer.setInterval(30'000);
+    updateInfoTimer.callOnTimeout(this, &Project::requestProjectData);
+
+    if (!fromDb)
     {
-        privateKey = DatabaseWorker::globalInstance()->getPrivateKey(data.privateKeyId.value());
-    }
-    requestProjectData();
-}
-
-void Project::setPrivateKeyId(const QVariant &newPrivateKeyId)
-{
-    if (!newPrivateKeyId.isValid())
-        return;
-
-    int newPKeyId = newPrivateKeyId.toInt();
-    if (newPKeyId == data.privateKeyId)
-        return;
-
-    data.privateKeyId = newPKeyId;
-    if (data.privateKeyId)
-    {
-        privateKey = DatabaseWorker::globalInstance()->getPrivateKey(data.privateKeyId.value());
         requestProjectData();
     }
-    emit privateKeyIdChanged();
+}
+
+void Project::setPrivateKey(const PrivateKey &newPrivateKey)
+{
+    if (newPrivateKey.id < 0 || newPrivateKey == data.privateKey)
+        return;
+
+    data.privateKey = newPrivateKey;
+    requestProjectData();
+    emit privateKeyChanged();
+}
+
+void Project::setLocalRepo(const QString &newLocalRepo)
+{
+    if (data.pathToLocalRepo == newLocalRepo)
+        return;
+    data.pathToLocalRepo = newLocalRepo;
+    DatabaseWorker::globalInstance()->updateProject(data);
+    emit localRepoChanged();
 }
 
 void Project::onGetProjectDone(ProjectData pData)
@@ -34,8 +41,14 @@ void Project::onGetProjectDone(ProjectData pData)
     if (pData.id != data.id)
         return;
 
-    data.name = pData.name;
-    data.webUrl = pData.webUrl;
+    ProjectData temp = data;
+    pData.pathToLocalRepo = data.pathToLocalRepo;
+    data = pData;
+    if (data.webUrl   != temp.webUrl)   emit urlChanged();
+    if (data.createDT != temp.createDT) emit createDTChanged();
+    if (data.author   != temp.author)   emit authorChanged();
+
+    DatabaseWorker::globalInstance()->updateProject(data);
 }
 
 void Project::onGetProjectError(int projectId, Requester::RequestError error, QString note)
@@ -61,14 +74,19 @@ void Project::onGetProjectError(int projectId, Requester::RequestError error, QS
         setError(Critical, tr("Project not found, check the correctness of the specified ID or use another key"));
         break;
     }
+    case Requester::HostError:
+    {
+        setError(Warning, tr("Cannot send request, invalid host"));
+        break;
+    }
     }
 }
 
 void Project::requestProjectData()
 {
-    if (privateKey.isEmpty())
+    if (data.privateKey.id < 0)
         return;
-    Requester::globalInstance()->getProject(data.id, privateKey);
+    Requester::globalInstance()->getProject(data.id, data.privateKey.key);
 }
 
 void Project::setError(ProjectError newError, const QString &newErrorString)

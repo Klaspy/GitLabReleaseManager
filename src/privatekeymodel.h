@@ -29,6 +29,7 @@ public:
 
     Q_INVOKABLE bool canAddKey(const QString &key) const;
     Q_INVOKABLE int getPKeyId(const int index) const;
+    Q_INVOKABLE PrivateKey getPKey(const int index) const;
 
 public slots:
     void addKey(const QString &keyName, const QString &key);

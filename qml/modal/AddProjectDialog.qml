@@ -143,7 +143,7 @@ Dialog {
                 }
 
                 isAddingProject = true
-                ProjectsListModel.addProject(projectId, PKeyModel.getPKeyId(pKey_cb.currentIndex))
+                ProjectsListModel.addProject(projectId, PKeyModel.getPKey(pKey_cb.currentIndex))
             }
         }
 

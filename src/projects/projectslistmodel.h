@@ -27,7 +27,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     Q_INVOKABLE bool containsProject(int projectId);
-    Q_INVOKABLE void addProject(int projectId, int privateKeyId);
+    Q_INVOKABLE void addProject(int projectId, PrivateKey privateKey);
+    Q_INVOKABLE Project *project(int row);
 
 signals:
     void projectAdded();

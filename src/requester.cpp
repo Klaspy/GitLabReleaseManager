@@ -43,14 +43,7 @@ void Requester::onReplyFinished(QNetworkReply *reply)
     }
 
     QByteArray data = reply->readAll();
-    qDebug() << request.url();
     QHttpHeaders headers = request.headers();
-    for (int i = 0; i < headers.size(); ++i)
-    {
-        qDebug() << headers.nameAt(i) << headers.valueAt(i);
-    }
-    qDebug() << request.rawHeaderList().join('\n');
-    qDebug() << data;
     int statusCode = statusCodeAttr.toInt();
     switch (statusCode)
     {
@@ -61,11 +54,17 @@ void Requester::onReplyFinished(QNetworkReply *reply)
             QJsonObject projectObj = QJsonDocument::fromJson(data).object();
 
             ProjectData pData;
-            pData.id     = projectObj.value("id").toInt();
-            pData.name   = projectObj.value("name").toString();
-            pData.webUrl = projectObj.value("web_url").toString();
+            pData.id       = projectObj.value("id").toInt();
+            pData.name     = projectObj.value("name").toString();
+            pData.webUrl   = projectObj.value("web_url").toString();
+            pData.createDT = QDateTime::fromString(projectObj.value("created_at").toString(), Qt::ISODate);
 
-            pData.privateKeyId = DatabaseWorker::globalInstance()->getPrivateKeyId(request.rawHeader("PRIVATE-TOKEN"));
+            QJsonObject owner = projectObj.value("owner").toObject();
+            pData.author.gitId  = owner.value("id").toInt();
+            pData.author.name   = owner.value("name").toString();
+            pData.author.gitUrl = owner.value("web_url").toString();
+
+            pData.privateKey = DatabaseWorker::globalInstance()->getPrivateKey(request.rawHeader("PRIVATE-TOKEN"));
 
             emit getProjectDone(pData);
         }
@@ -120,9 +119,7 @@ QNetworkRequest Requester::createNetworkRequest(QString urlEndPath, QString priv
 
     QNetworkRequest request(url);
     request.setRawHeader("PRIVATE-TOKEN", privateKey.toUtf8());
-    qDebug() << privateKey.toUtf8();
     request.setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader, "application/json");
-    qDebug() << request.rawHeader("PRIVATE-TOKEN");
 
     return request;
 }

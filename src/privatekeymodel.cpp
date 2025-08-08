@@ -80,6 +80,15 @@ int PrivateKeyModel::getPKeyId(const int index) const
     return -1;
 }
 
+PrivateKey PrivateKeyModel::getPKey(const int index) const
+{
+    if (index > -1 && index < keys.size())
+    {
+        return keys.at(index);
+    }
+    return PrivateKey();
+}
+
 void PrivateKeyModel::addKey(const QString &keyName, const QString &key)
 {
     PrivateKey pKey;

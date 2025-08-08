@@ -25,15 +25,22 @@ public:
     bool addProject(const ProjectData &project);
     bool updateProject(const ProjectData &project);
     bool deleteProject(const int &projectId);
-    bool containsProject(const int &projectId);
+    bool containsProject(const int &projectId) const;
 
     QList<PrivateKey> getPrivateKeys() const;
     bool addPrivateKey(PrivateKey &privateKey);
     bool deletePrivateKey(const int &keyId);
-    bool containsPrivateKey(const QString &key);
-    bool containsPrivateKey(const int &keyId);
-    QString getPrivateKey(const int &keyId);
-    int getPrivateKeyId(const QString &key);
+    bool containsPrivateKey(const QString &key) const;
+    bool containsPrivateKey(const int &keyId) const;
+    PrivateKey getPrivateKey(const int &keyId) const;
+    PrivateKey getPrivateKey(const QString &keyStr) const;
+    int getPrivateKeyId(const QString &key) const;
+
+    QList<UserData> getUsers() const;
+    UserData getUser(const int &userId) const;
+    bool addUser(const UserData &data);
+    bool updateUser(const UserData &data);
+    bool containsUser(const int &userId) const;
 
 signals:
     void privateKeysChanged();

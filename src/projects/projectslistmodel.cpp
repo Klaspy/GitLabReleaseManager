@@ -11,7 +11,7 @@ ProjectsListModel::ProjectsListModel(QObject *parent)
     QList<ProjectData> pDataList = DatabaseWorker::globalInstance()->getProjects();
 
     foreach (const ProjectData pData, pDataList) {
-        projects.append(new Project(pData, this));
+        projects.append(new Project(pData, true, this));
     }
 }
 
@@ -61,7 +61,7 @@ bool ProjectsListModel::containsProject(int projectId)
     return false;
 }
 
-void ProjectsListModel::addProject(int projectId, int privateKeyId)
+void ProjectsListModel::addProject(int projectId, PrivateKey privateKey)
 {
     qApp->setOverrideCursor(QCursor(Qt::BusyCursor));
     foreach (const Project *project, projects) {
@@ -72,8 +72,16 @@ void ProjectsListModel::addProject(int projectId, int privateKeyId)
     }
     tempProjectId = projectId;
 
-    Requester::globalInstance()->getProject(projectId,
-                                            DatabaseWorker::globalInstance()->getPrivateKey(privateKeyId));
+    Requester::globalInstance()->getProject(projectId, privateKey.key);
+}
+
+Project *ProjectsListModel::project(int row)
+{
+    if (row > -1 && row < projects.size())
+    {
+        return projects.at(row);
+    }
+    return nullptr;
 }
 
 void ProjectsListModel::onGetProjectDone(ProjectData pData)
@@ -81,7 +89,7 @@ void ProjectsListModel::onGetProjectDone(ProjectData pData)
     if (tempProjectId && tempProjectId.value() == pData.id)
     {
         beginInsertRows({}, projects.size(), projects.size());
-        projects.append(new Project(pData, this));
+        projects.append(new Project(pData, false, this));
         endInsertRows();
         tempProjectId = std::nullopt;
         DatabaseWorker::globalInstance()->addProject(pData);

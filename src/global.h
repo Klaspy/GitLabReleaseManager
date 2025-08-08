@@ -6,18 +6,55 @@
 
 struct PrivateKey
 {
-    int id;
+    Q_GADGET
+    QML_ELEMENT
+public:
+    int id {-1};
     QString name;
     QString key;
+
+    bool operator ==(const PrivateKey &other) const
+    {
+        return id   == other.id   &&
+               name == other.name &&
+               key  == other.key;
+    }
+};
+
+struct UserData
+{
+    Q_GADGET
+    QML_ELEMENT
+public:
+    int gitId {-1};
+    QString name;
+    QString gitUrl;
+
+    bool operator ==(const UserData &other) const
+    {
+        return gitId  == other.gitId &&
+               name   == other.name  &&
+               gitUrl == other.gitUrl;
+    }
+
+    bool operator !=(const UserData &other) const
+    {
+        return gitId  != other.gitId ||
+               name   != other.name  ||
+               gitUrl != other.gitUrl;
+    }
 };
 
 struct ProjectData
 {
     int id;
-    std::optional<int> privateKeyId {std::nullopt};
+    PrivateKey privateKey;
     QString name;
     QString webUrl;
     QString pathToLocalRepo;
+    QDateTime createDT;
+
+    UserData author;
 };
 
 #endif // GLOBAL_H

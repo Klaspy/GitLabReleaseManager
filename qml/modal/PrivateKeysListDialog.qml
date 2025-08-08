@@ -11,7 +11,7 @@ import "."
 Dialog {
     id: dialog
     title: qsTr("Private key list")
-    width: Math.max(200, tableView.childrenRect.width + 20)
+    width: Math.max(250, tableView.childrenRect.width + 20)
     height: 400
     anchors.centerIn: parent
 
@@ -47,7 +47,7 @@ Dialog {
             top: parent.top
             left: parent.left
             right: parent.right
-            rightMargin: 4
+            rightMargin: -4
         }
         syncView: tableView
 
@@ -55,7 +55,7 @@ Dialog {
             border.color: "black"
             color: "light gray"
             implicitHeight: 30
-            implicitWidth: 100
+            implicitWidth: tableView.width / 2
 
             Text {
                 text: display
@@ -141,6 +141,11 @@ Dialog {
         x: -11
         anchors.centerIn: parent
 
+        onClosed: {
+            keyName_field.text = ""
+            key_field.text = ""
+        }
+
         Column {
             width: parent.width
             spacing: 20
@@ -156,7 +161,7 @@ Dialog {
                 placeholderText: qsTr("Key")
                 width: parent.width
                 height: keyName_field.height
-                echoMode: TextInput.Password
+                // echoMode: TextInput.Password
 
                 ToolTip {
                     id: keyError_popup
