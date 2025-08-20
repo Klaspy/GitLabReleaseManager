@@ -11,7 +11,7 @@ ProjectsListModel::ProjectsListModel(QObject *parent)
     QList<ProjectData> pDataList = DatabaseWorker::globalInstance()->getProjects();
 
     foreach (const ProjectData pData, pDataList) {
-        projects.append(new Project(pData, true, this));
+        projects.append(new Project(pData, this));
     }
 }
 
@@ -89,7 +89,7 @@ void ProjectsListModel::onGetProjectDone(ProjectData pData)
     if (tempProjectId && tempProjectId.value() == pData.id)
     {
         beginInsertRows({}, projects.size(), projects.size());
-        projects.append(new Project(pData, false, this));
+        projects.append(new Project(pData, this));
         endInsertRows();
         tempProjectId = std::nullopt;
         DatabaseWorker::globalInstance()->addProject(pData);

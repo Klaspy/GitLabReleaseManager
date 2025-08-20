@@ -25,8 +25,14 @@ int main (int argc, char **argv)
     PrivateKeyModel *pKeyModel = new PrivateKeyModel(&app);
     engine.rootContext()->setContextProperty("PKeyModel", pKeyModel);
 
+
     qmlRegisterSingletonInstance("qmlcomponents", 1, 0, "DatabaseWorker", DatabaseWorker::globalInstance());
     qmlRegisterSingletonInstance("qmlcomponents", 1, 0, "ProjectsListModel", new ProjectsListModel(&app));
+    qmlRegisterUncreatableType<Project>("qmlcomponents", 1, 0, "Project", "");
+    qmlRegisterUncreatableType<UserData>("qmlcomponents", 1, 0, "UserData", "");
+    qmlRegisterUncreatableType<ReleaseData>("qmlcomponents", 1, 0, "ReleaseData", "");
+    qmlRegisterType<ReleaseLink>("qmlcomponents", 1, 0, "ReleaseLink");
+    qmlRegisterType<GitLabAccessLevels>("qmlcomponents", 1, 0, "GitLabAccessLevels");
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, []()

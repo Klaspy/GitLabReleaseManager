@@ -4,5 +4,6 @@
         <file>CustomStyle/qmldir</file>
         <file>CustomStyle/Text.qml</file>
         <file>CustomStyle/GlobalStyle.qml</file>
+        <file>CustomStyle/ComboBox.qml</file>
     </qresource>
 </RCC>

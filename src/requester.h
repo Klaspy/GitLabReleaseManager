@@ -30,6 +30,8 @@ public:
     static Requester *globalInstance();
 
     void getProject(const int id, const QString privateKey);
+    void getReleases(const int id, const QString privateKey);
+    void getTags(const int id, const QString privateKey);
 
 private slots:
     void onReplyFinished(QNetworkReply *reply);
@@ -38,12 +40,18 @@ signals:
     void getProjectDone(ProjectData pData);
     void getProjectError(int projectId, RequestError error, QString note = "");
 
+    void getReleasesDone(int projectId, QList<ReleaseData> releases);
+
+    void getTagsDone(int projectId, QList<TagData> tags);
+
 private:
     QString getBaseUrl() const;
 
     QNetworkRequest createNetworkRequest(QString urlEndPath, QString privateKey, QUrlQuery query = QUrlQuery());
 
     static const QRegularExpression projectExp;
+    static const QRegularExpression releasesExp;
+    static const QRegularExpression tagsExp;
 };
 
 #endif // REQUESTER_H

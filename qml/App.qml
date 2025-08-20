@@ -15,6 +15,7 @@ ApplicationWindow {
 
     width: 1280
     height: 720
+    minimumWidth: 640
     visible: true
 
     header: MenuBar {
@@ -31,6 +32,10 @@ ApplicationWindow {
                 onTriggered: preferences.open()
             }
         }
+    }
+
+    Component.onCompleted: {
+        GlobalStyle.appFont.pixelSize = 14
     }
 
     PrivateKeysListDialog {id: pKeyList}
@@ -121,6 +126,7 @@ ApplicationWindow {
                 model: ProjectsListModel
                 height: projectsList.height
                 currentIndex: -1
+                onCurrentIndexChanged: stack_tb.currentIndex = 0
 
                 ScrollBar.vertical: ScrollBar {}
 
@@ -155,7 +161,19 @@ ApplicationWindow {
             bottom:parent.bottom
         }
 
+        Connections {
+            target: root_window
+
+            function onWidthChanged() {
+                if (separator.x < Math.max(root_window.width / 6, 200))
+                {
+                    separator.x = Math.max(root_window.width / 6, 200)
+                }
+            }
+        }
+
         MouseArea {
+            id: split_ma
             cursorShape: Qt.SplitHCursor
             width: 10
             anchors {
@@ -164,7 +182,7 @@ ApplicationWindow {
                 bottom: parent.bottom
             }
             drag.target: separator
-            drag.minimumX: root_window.width / 6
+            drag.minimumX: Math.max(root_window.width / 6, 200)
             drag.maximumX: root_window.width / 2
         }
     }
@@ -234,6 +252,10 @@ ApplicationWindow {
                 currentIndex: stack_tb.currentIndex
 
                 ProjectStackElement {
+                    project: ProjectsListModel.project(projectsList_lv.currentIndex)
+                }
+
+                ReleasesStackElement {
                     project: ProjectsListModel.project(projectsList_lv.currentIndex)
                 }
             }

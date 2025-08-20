@@ -1,6 +1,5 @@
 QT = core gui sql network quick
 
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
@@ -16,6 +15,7 @@ SOURCES += \
     src/privatekeymodel.cpp \
     src/projects/project.cpp \
     src/projects/projectslistmodel.cpp \
+    src/projects/releaselistmodel.cpp \
     src/requester.cpp
 
 HEADERS += \
@@ -24,6 +24,7 @@ HEADERS += \
     src/privatekeymodel.h \
     src/projects/project.h \
     src/projects/projectslistmodel.h \
+    src/projects/releaselistmodel.h \
     src/requester.h
 
 RESOURCES += \
@@ -35,7 +36,7 @@ QML_IMPORT_NAME = qmlcomponents
 QML_IMPORT_MAJOR_VERSION = 1
 QML_IMPORT_PATH += $$PWD/
 
-INCLUDEPATH += src src/projects
+INCLUDEPATH += $$PWD/src $$PWD/src/projects
 
 TRANSLATIONS += \
     GitLabReleaseManager_ru_RU.ts

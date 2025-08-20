@@ -7,10 +7,10 @@ QtObject {
     property font  controlFont: appFont
 
     // constnt fonts
-    readonly property font appFont: Qt.font({
-                                                pixelSize: 12,
-                                                family: "Arial"
-                                            })
+    property font appFont: Qt.font({
+                                       pixelSize: 12,
+                                       family: "Arial"
+                                   })
 
     // constant colors
     readonly property color _Cyan: "#00f7ff"

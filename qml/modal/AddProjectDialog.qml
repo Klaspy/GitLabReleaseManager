@@ -18,6 +18,11 @@ Dialog {
         pKey_cb.displayText = ""
     }
 
+    onOpened: {
+        if (pKey_cb.count > 0)
+            pKey_cb.currentIndex = 0
+    }
+
     header: Item {
         height: 50
         Text {
@@ -72,27 +77,7 @@ Dialog {
             model: PKeyModel
             width: parent.width
             currentIndex: -1
-
-            delegate: Text {
-                text: display
-                width: parent.width
-                height: 30
-                verticalAlignment: Text.AlignVCenter
-                leftPadding: 10
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (pKey_cb.currentIndex !== index)
-                        {
-                            pKey_cb.currentIndex = index
-                            pKey_cb.displayText = text
-                            pKey_cb.popup.close()
-                        }
-                    }
-                }
-            }
+            textRole: "display"
         }
 
         Text {

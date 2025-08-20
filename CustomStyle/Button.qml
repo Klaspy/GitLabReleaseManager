@@ -6,8 +6,8 @@ Button {
     id: control
 
     property int radius: 0
-    property color bgColor: GlobalStyle.controlBgColor
-    property color textColor: GlobalStyle.controlTextColor
+    property alias bgColor: bg.color
+    property alias textColor: content.color
     font: GlobalStyle.controlFont
 
     onCheckableChanged: {
@@ -19,7 +19,8 @@ Button {
     }
 
     contentItem: Text {
-        color: control.textColor
+        id: content
+        color: GlobalStyle.controlTextColor
         text: control.text
         anchors.fill: parent
         horizontalAlignment: Text.AlignHCenter
@@ -28,8 +29,8 @@ Button {
     }
 
     background: Rectangle {
-        id: background
-        color: control.bgColor
+        id: bg
+        color: GlobalStyle.controlBgColor
         anchors.fill: control
         radius: control.radius
 
@@ -61,7 +62,7 @@ Button {
             name: "default"
             when: control.enabled && !control.pressed && !control.checked && !control.flat
             PropertyChanges {target: blackout; opacity: 0}
-            PropertyChanges {target: background; opacity: 1}
+            PropertyChanges {target: bg; opacity: 1}
         },
 
         State {
@@ -84,13 +85,13 @@ Button {
         State {
             name: "flat"
             when: control.enabled && control.flat
-            PropertyChanges {target: background; opacity: 0}
+            PropertyChanges {target: bg; opacity: 0}
         },
 
         State {
             name: "disabled"
             when: !control.enabled
-            PropertyChanges {target: background; color: "light gray"}
+            PropertyChanges {target: bg; color: "light gray"}
         }
     ]
 }

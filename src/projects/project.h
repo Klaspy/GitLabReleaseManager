@@ -7,6 +7,7 @@
 #include "src/global.h"
 #include "src/databaseworker.h"
 #include "src/requester.h"
+#include "releaselistmodel.h"
 
 class Project : public QObject
 {
@@ -14,16 +15,20 @@ class Project : public QObject
     QML_ELEMENT
     QML_UNCREATABLE("")
 
-    Q_PROPERTY(int        id         READ id CONSTANT                                             FINAL)
-    Q_PROPERTY(PrivateKey privateKey READ privateKey WRITE setPrivateKey NOTIFY privateKeyChanged FINAL)
-    Q_PROPERTY(QString    name       READ name                           NOTIFY nameChanged       FINAL)
-    Q_PROPERTY(QString    url        READ url                            NOTIFY urlChanged        FINAL)
-    Q_PROPERTY(QString    localRepo  READ localRepo  WRITE setLocalRepo  NOTIFY localRepoChanged  FINAL)
-    Q_PROPERTY(QDateTime  createDT   READ createDT                       NOTIFY createDTChanged   FINAL)
-    Q_PROPERTY(UserData   author     READ author                         NOTIFY authorChanged     FINAL)
+    Q_PROPERTY(int        id          READ id                             CONSTANT                  FINAL)
+    Q_PROPERTY(PrivateKey privateKey  READ privateKey WRITE setPrivateKey NOTIFY privateKeyChanged  FINAL)
+    Q_PROPERTY(QString    name        READ name                           NOTIFY nameChanged        FINAL)
+    Q_PROPERTY(QString    url         READ url                            NOTIFY urlChanged         FINAL)
+    Q_PROPERTY(QString    localRepo   READ localRepo  WRITE setLocalRepo  NOTIFY localRepoChanged   FINAL)
+    Q_PROPERTY(QString    createDT    READ createDT                       NOTIFY createDTChanged    FINAL)
+    Q_PROPERTY(UserData   author      READ author                         NOTIFY authorChanged      FINAL)
+    Q_PROPERTY(int        accessLevel READ accessLevel                    NOTIFY accessLevelChanged FINAL)
 
     Q_PROPERTY(ProjectError error  READ error       NOTIFY errorChanged FINAL)
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorChanged FINAL)
+
+    Q_PROPERTY(QVariant releases READ releases CONSTANT FINAL)
+    Q_PROPERTY(QList<TagData> tags READ tags NOTIFY tagsChanged FINAL)
 
 public:
     enum ProjectError {
@@ -33,7 +38,7 @@ public:
     };
     Q_ENUM(ProjectError)
 
-    explicit Project(const ProjectData &pData, bool fromDb, QObject *parent = nullptr);
+    explicit Project(const ProjectData &pData, QObject *parent = nullptr);
 
     int id() const {return data.id;}
 
@@ -47,12 +52,20 @@ public:
     QString localRepo() const {return data.pathToLocalRepo;}
     void setLocalRepo(const QString &newLocalRepo);
 
-    QDateTime createDT() const {return data.createDT;}
+    QString createDT() const {return data.createDT.toString("dd.MM.yyyy hh:mm:ss t");}
 
     UserData author() const {return data.author;}
 
     ProjectError error() const {return m_error;}
     QString errorString() const {return m_errorString;}
+
+    QVariant releases() const;
+
+    int accessLevel() const;
+
+    Q_INVOKABLE void updateTags();
+
+    QList<TagData> tags() const;
 
 signals:
     void nameChanged();
@@ -65,9 +78,14 @@ signals:
     void errorChanged();
     void errorStringChanged();
 
+    void accessLevelChanged();
+
+    void tagsChanged();
+
 private slots:
     void onGetProjectDone(ProjectData pData);
     void onGetProjectError(int projectId, Requester::RequestError error, QString note);
+    void onGetTagsDone(int projectId, QList<TagData> tags);
 
     void requestProjectData();
 
@@ -76,10 +94,14 @@ private:
     ProjectError m_error {Ok};
     QString m_errorString;
 
+    ReleaseListModel *m_releases {new ReleaseListModel(data.id, data.privateKey.key, this)};
+    ReleaseSFPModel *sortedReleases {new ReleaseSFPModel(m_releases, this)};
+
     QTimer updateInfoTimer;
 
     void setError(ProjectError newError, const QString &newErrorString = "");
+    QList<TagData> m_tags;
 };
-// Q_DECLARE_METATYPE(Project)
+Q_DECLARE_METATYPE(Project)
 
 #endif // PROJECT_H
