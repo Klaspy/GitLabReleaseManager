@@ -150,3 +150,34 @@ QList<TagData> Project::tags() const
 {
     return m_tags;
 }
+
+bool Project::createRelease(const QString &tag, const QString &title,
+                       const QString &description, const QList<ReleaseLink> &links)
+{
+    qApp->setOverrideCursor(QCursor(Qt::BusyCursor));
+
+    Requester *requester = Requester::globalInstance();
+
+    QList<ReleaseLink> uploadedLinks;
+    if (!links.isEmpty())
+    {
+        uploadedLinks = requester->uploadFiles(data.id, data.privateKey.key, "release", tag,
+                                                              links);
+        for (int i = 0, total = uploadedLinks.size(); i < total; ++i)
+        {
+            if (uploadedLinks.at(i).url.contains("%"))
+            {
+                uploadedLinks[i].url = uploadedLinks.at(i).url.arg(data.webUrl);
+            }
+        }
+    }
+
+    bool res = requester->createRelease(data.id, data.privateKey.key, tag, title, description, uploadedLinks);
+    if (res)
+    {
+        m_releases->getReleases();
+    }
+
+    qApp->restoreOverrideCursor();
+    return res;
+}

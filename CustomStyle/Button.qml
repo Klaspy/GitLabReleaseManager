@@ -1,6 +1,8 @@
+import Qml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import QtQuick.Layouts
 
 Button {
     id: control
@@ -10,22 +12,38 @@ Button {
     property alias textColor: content.color
     font: GlobalStyle.controlFont
 
-    onCheckableChanged: {
-        checked = false
-    }
-
     HoverHandler {
         cursorShape: control.hoverEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
     }
 
-    contentItem: Text {
-        id: content
-        color: GlobalStyle.controlTextColor
-        text: control.text
-        anchors.fill: parent
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        font: control.font
+    contentItem: GridLayout {
+        id: contentGtid
+        columnSpacing: control.display == Button.TextUnderIcon ? control.spacing : 0
+        rowSpacing: control.display == Button.TextBesideIcon ? control.spacing : 0
+        columns: control.display != Button.TextUnderIcon ? 2 : 1
+
+        Image {
+            id: icon
+            source: control.icon.source
+            Layout.preferredWidth: visible ? control.icon.width : 0
+            Layout.preferredHeight: visible ? control.icon.height : 0
+            fillMode: Image.PreserveAspectFit
+            visible: control.display != Button.TextOnly && String(source) !== ""
+            Layout.fillWidth: control.display == Button.IconOnly || control.display == Button.TextUnderIcon
+            Layout.fillHeight: control.display == Button.IconOnly || control.display == Button.TextBesideIcon
+        }
+
+        Text {
+            id: content
+            color: GlobalStyle.controlTextColor
+            text: control.text
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            font: control.font
+            visible: control.display != Button.IconOnly
+        }
     }
 
     background: Rectangle {

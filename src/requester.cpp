@@ -1,10 +1,6 @@
 #include "requester.h"
 #include "databaseworker.h"
 
-const QRegularExpression Requester::projectExp  {"^projects\\/\\d+$"};
-const QRegularExpression Requester::releasesExp {"^projects\\/\\d+\\/releases$"};
-const QRegularExpression Requester::tagsExp     {"^projects\\/\\d+\\/repository/tags$"};
-
 Requester::Requester(QObject *parent)
     : QNetworkAccessManager {parent}
 {
@@ -19,8 +15,193 @@ Requester *Requester::globalInstance()
     return requester;
 }
 
+void Requester::getProject(const int id, const QString privateKey)
+{
+    QNetworkRequest request = createNetworkRequest("projects/" + QString::number(id), privateKey);
+
+    if (!request.url().isValid())
+    {
+        emit getProjectError(id, RequestError::HostError);
+        return;
+    }
+
+    QNetworkReply *reply = get(request);
+    reply->setProperty("method", "get");
+    reply->setProperty("id", id);
+    reply->setProperty("requestType", GetProjectType);
+
+}
+
+void Requester::getReleases(const int id, const QString privateKey)
+{
+    QNetworkRequest request = createNetworkRequest(QString("projects/%1/releases").arg(id), privateKey);
+
+    if (!request.url().isValid())
+    {
+        return;
+    }
+
+    QNetworkReply *reply =  get(request);
+    reply->setProperty("method", "get");
+    reply->setProperty("id", id);
+    reply->setProperty("requestType", GetReleasesType);
+}
+
+void Requester::getTags(const int id, const QString privateKey)
+{
+    QNetworkRequest request = createNetworkRequest(QString("projects/%1/repository/tags").arg(id), privateKey);
+
+    if (!request.url().isValid())
+    {
+        return;
+    }
+
+    QNetworkReply *reply = get(request);
+    reply->setProperty("method", "get");
+    reply->setProperty("id", id);
+    reply->setProperty("requestType", GetTagsType);
+}
+
+QList<ReleaseLink> Requester::uploadFiles(const int id, const QString privateKey, const QString &package,
+                                          const QString &version, const QList<ReleaseLink> &files)
+{
+    if (files.isEmpty())
+        return {};
+
+    QList<ReleaseLink> result;
+    QNetworkReply *reply;
+    QNetworkRequest request;
+    QEventLoop loop;
+    int statusCode;
+    int packageId {-1};
+    QSettings settings(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/settings.ini",
+                       QSettings::IniFormat);
+
+    QString gitUrl = settings.value("gitLabUrl").toString();
+    for (const ReleaseLink &releaseFile : files)
+    {
+        request = createNetworkRequest(QString("projects/%1/packages/generic/%2/%3/%4")
+                                                           .arg(id)
+                                                           .arg(package, version, releaseFile.name)
+                                                           , privateKey);
+
+        QFile file(QUrl(releaseFile.url).toString(QUrl::PreferLocalFile));
+
+        QUrl url = QUrl(releaseFile.url);
+        if (!url.isLocalFile() && url.isValid())
+        {
+            result.append(releaseFile);
+            continue;
+        }
+        if (!request.url().isValid() || !url.isLocalFile() || !file.open(QIODevice::ReadOnly))
+        {
+            result.append(releaseFile);
+            continue;
+        }
+
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+        request.setHeader(QNetworkRequest::ContentLengthHeader, file.size());
+
+        reply = put(request, file.readAll());
+        reply->setProperty("requestType", UndefinedType);
+
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (reply->error() != QNetworkReply::NoError && (statusCode != 200 || statusCode != 201))
+        {
+            result.append(releaseFile);
+            continue;
+        }
+
+        result.append(releaseFile);
+    }
+
+    packageId = getProjectPackage(id, privateKey, package, version);
+    if (packageId == -1)
+        return {};
+
+    request = createNetworkRequest(QString("projects/%1/packages/%2/package_files").arg(id).arg(packageId),
+                                   privateKey);
+    reply = get(request);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QJsonArray packageFiles = QJsonDocument::fromJson(reply->readAll()).array();
+
+    int total = result.size();
+    for (const QJsonValue &packageFileVal : std::as_const(packageFiles))
+    {
+        QJsonObject packageFileObj = packageFileVal.toObject();
+        QString name = packageFileObj.value("file_name").toString();
+        qint64 id = packageFileObj.value("id").toInteger(-1);
+        if (id == -1 || name.isEmpty())
+            continue;
+
+        for (int i = 0; i < total; ++i)
+        {
+            if (result.at(i).name == name)
+            {
+                result[i].url = QString("%2/-/package_files/%1/download").arg(id);
+            }
+        }
+    }
+
+    return result;
+}
+
+bool Requester::createRelease(const int id, const QString privateKey, const QString &tag, const QString &title,
+                              const QString &description, const QList<ReleaseLink> &links)
+{
+
+    QNetworkRequest request = createNetworkRequest(QString("projects/%1/releases").arg(id), privateKey);
+
+    QJsonObject releaseData {
+        {"name", title},
+        {"tag_name", tag},
+        {"description", description}
+    };
+
+    QJsonArray linksArr;
+
+    for (const ReleaseLink &link : links)
+    {
+        QJsonObject linkObj {
+            {"name", link.name},
+            {"url", link.url},
+            {"link_type", linkTypetoString(link.type)},
+            {"filepath", "/" + link.name}
+        };
+
+        linksArr.append(linkObj);
+    }
+
+    releaseData.insert("assets", QJsonObject {
+                                             {"links", linksArr}
+    });
+
+    QEventLoop loop;
+    QNetworkReply *reply = post(request, QJsonDocument(releaseData).toJson(QJsonDocument::Compact));
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (reply->error() != QNetworkReply::NoError && (statusCode != 200 || statusCode != 201))
+    {
+        return false;
+    }
+    return true;
+}
+
 void Requester::onReplyFinished(QNetworkReply *reply)
 {
+    RequestType requestType = (RequestType)reply->property("requestType").toInt();
+    if (requestType == UndefinedType)
+        return;
+    int projectId = reply->property("id").toInt();
+    QString method = reply->property("method").toString();
+
     QVariant statusCodeAttr = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     QNetworkRequest request = reply->request();
     QString path = request.url().path();
@@ -29,9 +210,10 @@ void Requester::onReplyFinished(QNetworkReply *reply)
     if (!statusCodeAttr.isValid())
     {
         QString error = reply->errorString();
-        if (projectExp.match(path).hasMatch())
+        switch (requestType)
         {
-            int projectId = path.split("/").at(1).toInt();
+        case GetProjectType:
+        {
             if (reply->error() == QNetworkReply::ProtocolUnknownError)
             {
                 emit getProjectError(projectId, HostError, error);
@@ -40,6 +222,9 @@ void Requester::onReplyFinished(QNetworkReply *reply)
             {
                 emit getProjectError(projectId, NetworkError, error);
             }
+            break;
+        }
+        default: break;
         }
 
         qWarning() << "Ошибка во время выполнения запроса" << request.url().toString() << ":" << error;
@@ -53,7 +238,10 @@ void Requester::onReplyFinished(QNetworkReply *reply)
     {
     case 200:
     {
-        if (projectExp.match(path).hasMatch())
+        switch (requestType)
+        {
+        case UndefinedType: Q_UNREACHABLE(); break;
+        case GetProjectType:
         {
             QJsonObject projectObj = QJsonDocument::fromJson(data).object();
 
@@ -65,6 +253,7 @@ void Requester::onReplyFinished(QNetworkReply *reply)
             pData.accessLevel = projectObj.value("permissions").toObject().value("project_access").
                                 toObject().value("access_level").toInt();
 
+            // TODO Обработать отсутствие поля owner
             QJsonObject owner = projectObj.value("owner").toObject();
             pData.author.gitId  = owner.value("id").toInt();
             pData.author.name   = owner.value("name").toString();
@@ -73,8 +262,9 @@ void Requester::onReplyFinished(QNetworkReply *reply)
             pData.privateKey = DatabaseWorker::globalInstance()->getPrivateKey(request.rawHeader("PRIVATE-TOKEN"));
 
             emit getProjectDone(pData);
+            break;
         }
-        else if (releasesExp.match(path).hasMatch())
+        case GetReleasesType:
         {
             QList<ReleaseData> releases;
             QJsonArray releasesArr = QJsonDocument::fromJson(data).array();
@@ -89,9 +279,9 @@ void Requester::onReplyFinished(QNetworkReply *reply)
                                                      value("id").toString().toUtf8());
                 release.url         = releaseObj.value("_links").toObject().value("self").toString();
                 release.createDT    = QDateTime::fromString(releaseObj.value("created_at").toString(),
-                                                            Qt::ISODate);
+                                                         Qt::ISODate);
                 release.releaseDT   = QDateTime::fromString(releaseObj.value("released_at").toString(),
-                                                            Qt::ISODate);
+                                                          Qt::ISODate);
 
                 QJsonObject author = releaseObj.value("author").toObject();
                 release.author.gitId  = author.value("id").toInt();
@@ -127,15 +317,15 @@ void Requester::onReplyFinished(QNetworkReply *reply)
                 releases.append(release);
             }
 
-            int projectId = path.split("/").at(1).toInt();
             emit getReleasesDone(projectId, releases);
+            break;
         }
-        else if (tagsExp.match(path).hasMatch())
+        case GetTagsType:
         {
             QJsonArray tagsArr = QJsonDocument::fromJson(data).array();
 
             QList<TagData> tags;
-            for (const QJsonValue &tagVal : tagsArr)
+            for (const QJsonValue &tagVal : std::as_const(tagsArr))
             {
                 QJsonObject tagObj = tagVal.toObject();
                 if (tagObj.isEmpty())
@@ -148,67 +338,77 @@ void Requester::onReplyFinished(QNetworkReply *reply)
                 tags.append(tag);
             }
 
-            int projectId = path.split("/").at(1).toInt();
             emit getTagsDone(projectId, tags);
+            break;
+        }
         }
         break;
     }
     case 404:
     {
-        if (projectExp.match(path).hasMatch())
+        if (requestType == GetProjectType)
         {
-            int projectId = path.split("/").at(1).toInt();
             emit getProjectError(projectId, NotFoundError);
         }
         break;
     }
     default:
     {
-        if (projectExp.match(path).hasMatch())
+        switch (requestType)
         {
-            int projectId = path.split("/").at(1).toInt();
+        case GetProjectType:
+        {
             emit getProjectError(projectId, HttpCodeError, QString::number(statusCode));
+            break;
+        }
+        default: break;
         }
         break;
     }
     }
 }
 
-void Requester::getProject(const int id, const QString privateKey)
+qint64 Requester::getProjectPackage(const int id, const QString privateKey, const QString &package, const QString &version)
 {
-    QNetworkRequest request = createNetworkRequest("projects/" + QString::number(id), privateKey);
+    QEventLoop loop;
+    QNetworkRequest request = createNetworkRequest(QString("projects/%1/packages").arg(id), privateKey);
+    QNetworkReply *reply = get(request);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
 
-    if (!request.url().isValid())
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    if (reply->error() != QNetworkReply::NoError && (statusCode != 200 || statusCode != 201))
     {
-        emit getProjectError(id, RequestError::HostError);
-        return;
+        return {};
     }
 
-    get(request);
+    QJsonArray packages = QJsonDocument::fromJson(reply->readAll()).array();
+
+    for (const QJsonValue &packageVal : std::as_const(packages))
+    {
+        QJsonObject packageObj = packageVal.toObject();
+        if (packageObj.value("name").toString() == package &&
+            packageObj.value("version").toString() == version)
+        {
+            return packageObj.value("id").toInteger();
+        }
+    }
+    return -1;
 }
 
-void Requester::getReleases(const int id, const QString privateKey)
+QString Requester::linkTypetoString(ReleaseLink::LinkType type)
 {
-    QNetworkRequest request = createNetworkRequest(QString("projects/%1/releases").arg(id), privateKey);
-
-    if (!request.url().isValid())
+    switch (type)
     {
-        return;
+    case ReleaseLink::SourceCode: return "other";
+    case ReleaseLink::Package: return "package";
+    case ReleaseLink::Image: return "image";
+    case ReleaseLink::RunBook: return "runbook";
+    case ReleaseLink::Other: return "other";
     }
 
-    get(request);
-}
-
-void Requester::getTags(const int id, const QString privateKey)
-{
-    QNetworkRequest request = createNetworkRequest(QString("projects/%1/repository/tags").arg(id), privateKey);
-
-    if (!request.url().isValid())
-    {
-        return;
-    }
-
-    get(request);
+    Q_UNREACHABLE();
+    return {};
 }
 
 QString Requester::getBaseUrl() const

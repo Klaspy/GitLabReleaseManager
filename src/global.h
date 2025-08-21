@@ -110,9 +110,10 @@ public:
 
     bool operator ==(const ReleaseLink &other) const
     {
-        return name == other.name && url == other.url;
+        return name == other.name && url == other.url && type == other.type;
     }
 };
+Q_DECLARE_METATYPE(ReleaseLink)
 
 struct ReleaseData
 {
@@ -161,7 +162,12 @@ public:
                commit      == other.commit &&
                url         == other.url &&
                createDT    == other.createDT &&
-               releaseDT   == other.releaseDT;
+               releaseDT   == other.releaseDT &&
+               sourceCodes == other.sourceCodes &&
+               packages    == other.packages &&
+               images      == other.images &&
+               runbooks    == other.runbooks &&
+               otherLinks  == other.otherLinks;
     }
 };
 Q_DECLARE_METATYPE(ReleaseData)

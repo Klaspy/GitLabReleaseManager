@@ -1,6 +1,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include <QGuiApplication>
+#include <QCursor>
 #include <QObject>
 #include <QTimer>
 
@@ -66,6 +68,9 @@ public:
     Q_INVOKABLE void updateTags();
 
     QList<TagData> tags() const;
+
+    Q_INVOKABLE bool createRelease(const QString &tag, const QString &title, const QString &description,
+                              const QList<ReleaseLink> &links);
 
 signals:
     void nameChanged();

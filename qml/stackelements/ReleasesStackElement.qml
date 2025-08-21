@@ -13,17 +13,17 @@ Item {
 
     property Project project
 
-    onVisibleChanged: newRelease_dialog.reject()
+    onVisibleChanged: release_dialog.reject()
 
-    NewReleaseDialog {
-        id: newRelease_dialog
+    ReleaseDialog {
+        id: release_dialog
         project: releases_root.project
     }
 
     Column {
         width: releases_root.width
         spacing: 20
-        visible: !newRelease_dialog.visible
+        visible: !release_dialog.visible
 
         Row {
             layoutDirection: Qt.RightToLeft
@@ -34,7 +34,7 @@ Item {
                 bgColor: "dodgerblue"
                 textColor: "white"
                 enabled: project !== null && project.accessLevel >= GitLabAccessLevels.Developer
-                onClicked: newRelease_dialog.open()
+                onClicked: release_dialog.open()
             }
         }
 

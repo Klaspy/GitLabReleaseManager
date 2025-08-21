@@ -84,7 +84,25 @@ void ReleaseListModel::onGetReleasesDone(int projectId, QList<ReleaseData> relea
     }
     else
     {
-        for (int i = 0; i < releases.size(); ++i)
+
+        QList<QString> newTags;
+        foreach (const ReleaseData &release, releases) {
+            newTags.append(release.tag);
+        }
+        for (int i = 0; i < m_releases.size();)
+        {
+            if (!newTags.contains(m_releases.at(i).tag))
+            {
+                beginRemoveRows({}, i, i);
+                m_releases.removeAt(i);
+                endRemoveRows();
+            }
+            else
+            {
+                i++;
+            }
+        }
+        for (int i = 0; i < releases.size();)
         {
             if (m_releases.contains(releases.at(i)))
             {

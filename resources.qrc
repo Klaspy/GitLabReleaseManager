@@ -9,7 +9,8 @@
         <file>qml/stackelements/ProjectStackElement.qml</file>
         <file>qml/stackelements/ReleasesStackElement.qml</file>
         <file>qml/stackelements/ReleaseColumnElement.qml</file>
-        <file>qml/modal/NewReleaseDialog.qml</file>
+        <file>qml/modal/ReleaseDialog.qml</file>
+        <file>images/reload.png</file>
     </qresource>
     <qresource prefix="/translations">
         <file>GitLabReleaseManager_ru_RU.qm</file>
