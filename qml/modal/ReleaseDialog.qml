@@ -212,6 +212,9 @@ Dialog {
                     TextField {
                         id: fileName
                         text: parent.name
+                        validator: RegularExpressionValidator {
+                            regularExpression: /[A-Za-z0-9-._~:#!$'\\(\\)\\*\\+,;=]*/
+                        }
 
                         background: Rectangle {border.width: 1}
 
