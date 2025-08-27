@@ -5,9 +5,8 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-# CONFIG += qmltypes
-# QML_IMPORT_NAME = qmlcomponents
-# QML_IMPORT_MAJOR_VERSION = 1
+RC_ICONS = cat.ico
+VERSION=1.0.0.0
 
 SOURCES += \
     main.cpp \
