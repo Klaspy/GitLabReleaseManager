@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Shapes
 import QtQuick.Effects
 
-import qmlcomponents
 import CustomStyle
 
 import "../modal"
@@ -33,7 +32,7 @@ Item {
                 text: qsTr("New release")
                 bgColor: "dodgerblue"
                 textColor: "white"
-                enabled: project !== null && project.accessLevel >= gitLabAccessLevels.Developer
+                enabled: project !== null && project.accessLevel >= GitLabAccessLevels.Developer
                 onClicked: release_dialog.open()
             }
         }

@@ -6,8 +6,8 @@
 #include <QQmlEngine>
 #include <QTimer>
 
-#include <global.h>
-#include <requester.h>
+#include "../global.h"
+#include "../requester.h"
 
 class ReleaseListModel : public QAbstractListModel
 {

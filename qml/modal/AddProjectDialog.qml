@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Effects
 
 import CustomStyle
-import qmlcomponents
 
 Dialog {
     id: dialog

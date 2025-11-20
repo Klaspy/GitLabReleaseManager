@@ -5,7 +5,6 @@ import QtQuick.Dialogs as Dialogs
 import QtQuick.Layouts
 
 import CustomStyle
-import qmlcomponents
 
 import "../components"
 

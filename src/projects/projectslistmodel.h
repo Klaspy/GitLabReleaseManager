@@ -5,7 +5,7 @@
 #include <QAbstractListModel>
 #include <QCursor>
 
-#include <project.h>
+#include "project.h"
 
 class ProjectsListModel : public QAbstractListModel
 {

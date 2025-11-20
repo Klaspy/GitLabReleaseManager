@@ -1,10 +1,11 @@
 import Qml
+import QtQuick.Controls.Basic
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Effects
 import QtQuick.Layouts
 
-Button {
+Controls.Button {
     id: control
 
     property int radius: 0

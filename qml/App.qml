@@ -1,10 +1,10 @@
+import QtQuick.Controls.Basic
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 
 import CustomStyle
-import qmlcomponents
 
 import "./modal"
 import "./components"

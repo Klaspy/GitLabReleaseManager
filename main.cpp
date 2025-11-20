@@ -8,6 +8,8 @@
 #include "src/privatekeymodel.h"
 #include "src/projects/projectslistmodel.h"
 
+#include <QDirIterator>
+
 int main (int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
@@ -30,7 +32,8 @@ int main (int argc, char **argv)
                      {
                          QCoreApplication::exit(-1);
                      }, Qt::QueuedConnection);
-    engine.load(QUrl("qrc:/qml/App.qml"));
+    // engine.load(QUrl("qrc:/qml/App.qml"));
+    engine.loadFromModule("GitLabReleaseManagerModule", "App");
 
     return app.exec();
 }

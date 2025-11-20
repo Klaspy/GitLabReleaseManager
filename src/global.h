@@ -8,7 +8,6 @@ class GitLabAccessLevels
 {
     Q_GADGET
     QML_ELEMENT
-    QML_NAMED_ELEMENT(gitLabAccessLevels)
 
 public:
     enum Enumerator {

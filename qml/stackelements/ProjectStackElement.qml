@@ -1,6 +1,5 @@
 import QtQuick 2.15
 
-import qmlcomponents 1.0
 import CustomStyle
 
 Item {

@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Shapes
 
-import qmlcomponents
 import CustomStyle
 
 Column {
