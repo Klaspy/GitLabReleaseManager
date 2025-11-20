@@ -1,0 +1,24 @@
+#include "winver.h"
+
+IDI_ICON1               ICON    "cat.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "GitLabReleaseManager"
+            VALUE "OriginalFilename", "GitLabReleaseManager.exe"
+            VALUE "ProductName", "GitLab Release Manager"
+            VALUE "ProductVersion", "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
