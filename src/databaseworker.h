@@ -20,6 +20,7 @@ class DatabaseWorker : public QObject
     explicit DatabaseWorker(QObject *parent = nullptr);
 public:
     static DatabaseWorker *globalInstance();
+    static DatabaseWorker *create(QQmlEngine *engine, QJSEngine *jsEngine);
 
     QList<ProjectData> getProjects() const;
     bool addProject(const ProjectData &project);

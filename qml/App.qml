@@ -221,7 +221,7 @@ ApplicationWindow {
 
                 Repeater {
                     id: stackHeader_repeater
-                    model: [qsTr("Project"), qsTr("Releases"), qsTr("Tags")]
+                    model: [qsTr("Project"), qsTr("Releases")]
 
                     HeaderButton {
                         id: project_btn

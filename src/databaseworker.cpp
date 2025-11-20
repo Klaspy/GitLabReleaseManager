@@ -18,6 +18,13 @@ DatabaseWorker *DatabaseWorker::globalInstance()
     return worker;
 }
 
+DatabaseWorker *DatabaseWorker::create(QQmlEngine *engine, QJSEngine *jsEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(jsEngine)
+    return globalInstance();
+}
+
 QList<ProjectData> DatabaseWorker::getProjects() const
 {
     QSqlQuery query("SELECT * FROM Projects ORDER BY Id");
@@ -356,7 +363,7 @@ UserData DatabaseWorker::getUser(const int &userId) const
 
 bool DatabaseWorker::addUser(const UserData &data)
 {
-    if (containsUser(data.gitId)) return false;
+    if (containsUser(data.gitId) || data.name.isEmpty()) return false;
 
     QSqlQuery query("INSERT INTO Users (Id, Name, WebUrl) "
                     "VALUES (?, ?, ?)");

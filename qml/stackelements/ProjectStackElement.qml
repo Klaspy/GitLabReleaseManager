@@ -32,7 +32,7 @@ Item {
             Text {text: "Create date time: " + project.createDT}
 
             Row {
-                property UserData author: project.author
+                property userData author: project.author
 
                 Text {text: qsTr("Author") + ": "}
 

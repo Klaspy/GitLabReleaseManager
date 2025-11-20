@@ -8,7 +8,7 @@ class GitLabAccessLevels
 {
     Q_GADGET
     QML_ELEMENT
-    // QML_NAMED_ELEMENT(Enums)
+    QML_NAMED_ELEMENT(gitLabAccessLevels)
 
 public:
     enum Enumerator {
@@ -27,6 +27,8 @@ struct PrivateKey
 {
     Q_GADGET
     QML_ELEMENT
+    QML_NAMED_ELEMENT(privateKey)
+
 public:
     int id {-1};
     QString name;
@@ -45,6 +47,7 @@ struct UserData
     Q_GADGET
     QML_ELEMENT
     QML_UNCREATABLE("")
+    QML_NAMED_ELEMENT(userData)
 
     Q_PROPERTY(int     gitId  MEMBER gitId  FINAL)
     Q_PROPERTY(QString name   MEMBER name   FINAL)
@@ -88,6 +91,7 @@ struct ReleaseLink
 {
     Q_GADGET
     QML_ELEMENT
+    QML_NAMED_ELEMENT(releaseLink)
 
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString url  MEMBER url)
@@ -120,6 +124,7 @@ struct ReleaseData
     Q_GADGET
     QML_ELEMENT
     QML_UNCREATABLE("")
+    QML_NAMED_ELEMENT(releaseData)
 
     Q_PROPERTY(QString    name        MEMBER name)
     Q_PROPERTY(QString    description MEMBER description)
@@ -177,6 +182,7 @@ struct TagData
     Q_GADGET
     QML_ELEMENT
     QML_UNCREATABLE("")
+    QML_NAMED_ELEMENT(tagData)
 
     Q_PROPERTY(QString name       MEMBER name)
     Q_PROPERTY(bool    hasRelease MEMBER hasRelease)

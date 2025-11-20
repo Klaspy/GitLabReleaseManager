@@ -9,7 +9,7 @@ Column {
     id: release_col
     width: releases_root.width
     spacing: 0
-    property ReleaseData release: release_
+    property releaseData release: release_
     property int accessLevel
     height: 30 + release_bodyShape.height
 

@@ -33,7 +33,7 @@ Item {
                 text: qsTr("New release")
                 bgColor: "dodgerblue"
                 textColor: "white"
-                enabled: project !== null && project.accessLevel >= GitLabAccessLevels.Developer
+                enabled: project !== null && project.accessLevel >= gitLabAccessLevels.Developer
                 onClicked: release_dialog.open()
             }
         }

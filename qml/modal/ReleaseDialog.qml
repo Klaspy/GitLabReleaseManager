@@ -187,7 +187,7 @@ Dialog {
             Repeater {
                 id: releaseLinks_repeater
                 width: parent.width
-                property list<ReleaseLink> releaseLinks
+                property list<releaseLink> releaseLinks
                 model: releaseLinks
 
                 function syncModel() {
@@ -269,10 +269,10 @@ Dialog {
                     nameFilters: [qsTr("All files (*)")]
 
                     onAccepted: {
-                        var newLink = new ReleaseLink()
+                        var newLink = new releaseLink()
                         newLink.name = String(selectedFile).split("/").pop()
                         newLink.url = String(selectedFile)
-                        newLink.type = ReleaseLink.Package
+                        newLink.type = releaseLink.Package
 
                         releaseLinks_repeater.model.push(newLink)
                     }
